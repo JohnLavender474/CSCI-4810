@@ -54,12 +54,11 @@ public class Assignment_1_and_2 implements Runnable {
         });
         Scanner scanner = new Scanner(System.in);
         System.out.println(TITLE + "\n");
-        boolean running = true;
-        while (running) {
+        while (true) {
             System.out.print("\nENTER THE FILE TO LOAD: ");
             String input = scanner.nextLine();
             if (input.equals("exit")) {
-                running = false;
+                break;
             }
             try {
                 File file = new File(input);
