@@ -24,11 +24,12 @@ public class Assignment3 implements Runnable {
             Assignment3::test4,
             Assignment3::test5,
             Assignment3::test6,
-            Assignment3::test7
+            Assignment3::test7,
+            Assignment3::test8
     );
 
     private static final List<Integer> TESTS_TO_RUN = List.of(
-            7
+            8
     );
 
     private static final String TITLE = "John Lavender - CSCI 4810 Assignment 3";
@@ -44,11 +45,13 @@ public class Assignment3 implements Runnable {
         TRANSFORMATIONS("Transformations: \"3 <matrix file>\""),
         TRANSLATION("Translation: \"4 <dx> <dy>\""),
         BASIC_SCALE("Basic scale: \"5 <sx> <sy>\""),
-        BASIC_ROTATE("Basic rotate: \"6 <angle>\""),
-        SCALE("Scale: \"7 <sx> <sy> <cx> <cy>\""),
-        ROTATE("Rotate: \"8 <angle> <cx> <cy>\""),
-        HELP("Help: \"9\""),
-        EXIT("Exit: \"10\"");
+        SCALE("Scale: \"6 <sx> <sy> <cx> <cy>\""),
+        CENTER_SCALE("Center scale: \"7 <sx> <sy>\""),
+        BASIC_ROTATE("Basic rotation: \"8 <angle>\""),
+        ROTATE("Rotate: \"9 <angle> <cx> <cy>\""),
+        CENTER_ROTATE("Center rotation: \"10 <angle>\""),
+        HELP("Help: \"11\""),
+        EXIT("Exit: \"12\"");
 
         private final String prompt;
 
@@ -110,6 +113,10 @@ public class Assignment3 implements Runnable {
                         boolean clear = input.length < 3 || input[2].equalsIgnoreCase("y");
                         inputLines(lines, file, clear);
                     }
+                    case OUTPUT_LINES -> {
+                        String filename = input[1];
+                        outputLines(filename, lines);
+                    }
                     case TRANSFORMATIONS -> {
                         String file = input[1];
                         transformations(lines, file);
@@ -118,10 +125,6 @@ public class Assignment3 implements Runnable {
                         int dx = Integer.parseInt(input[1]);
                         int dy = Integer.parseInt(input[2]);
                         translate(lines, dx, dy);
-                    }
-                    case BASIC_ROTATE -> {
-                        int rotation = Integer.parseInt(input[1]);
-                        basicRotate(lines, rotation);
                     }
                     case BASIC_SCALE -> {
                         int sx = Integer.parseInt(input[1]);
@@ -135,15 +138,24 @@ public class Assignment3 implements Runnable {
                         int cy = Integer.parseInt(input[4]);
                         scale(lines, sx, sy, cx, cy);
                     }
+                    case CENTER_SCALE -> {
+                        int sx = Integer.parseInt(input[1]);
+                        int sy = Integer.parseInt(input[2]);
+                        centerScale(lines, sx, sy);
+                    }
+                    case BASIC_ROTATE -> {
+                        int rotation = Integer.parseInt(input[1]);
+                        basicRotation(lines, rotation);
+                    }
                     case ROTATE -> {
                         int angle = Integer.parseInt(input[1]);
                         int cx = Integer.parseInt(input[2]);
                         int cy = Integer.parseInt(input[3]);
-                        rotate(lines, angle, cx, cy);
+                        rotation(lines, angle, cx, cy);
                     }
-                    case OUTPUT_LINES -> {
-                        String filename = input[1];
-                        outputLines(filename, lines);
+                    case CENTER_ROTATE -> {
+                        int angle = Integer.parseInt(input[1]);
+                        centerRotation(lines, angle);
                     }
                     case HELP -> help();
                     case EXIT -> running = false;
@@ -271,47 +283,92 @@ public class Assignment3 implements Runnable {
         scale(lines, sx, sy, 0, 0);
     }
 
+    private static void centerScale(List<Line> lines, int sx, int sy) {
+        lines.forEach(line -> centerScale(line, sx, sy));
+    }
+
     private static void scale(List<Line> lines, int sx, int sy, int cx, int cy) {
-        lines.forEach(line -> {
-            line.x1 -= cx;
-            line.x2 -= cx;
-            line.y1 -= cy;
-            line.y2 -= cy;
-            Matrix lineMatrix1 = new Matrix(new int[][]{
-                    {
-                            line.x1, line.y1, 1
-                    }
-            });
-            Matrix lineMatrix2 = new Matrix(new int[][]{
-                    {
-                            line.x2, line.y2, 1
-                    }
-            });
-            FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
-                put(Coordinate.of(0, 0), i -> i * sx);
-                put(Coordinate.of(1, 1), i -> i * sy);
-                put(Coordinate.of(2, 2), i -> i);
-            }});
-            Matrix appliedMatrix1 = lineMatrix1.apply(funcMatrix);
-            Matrix appliedMatrix2 = lineMatrix2.apply(funcMatrix);
-            line.x1 = appliedMatrix1.get(0, 0) + cx;
-            line.y1 = appliedMatrix1.get(0, 1) + cy;
-            line.x2 = appliedMatrix2.get(0, 0) + cx;
-            line.y2 = appliedMatrix2.get(0, 1) + cy;
+        lines.forEach(line -> scale(line, sx, sy, cx, cy));
+    }
+
+    private static void centerScale(Line line, int sx, int sy) {
+        int cx = (line.x1 + line.x2) / 2;
+        int cy = (line.y1 + line.y2) / 2;
+        scale(line, sx, sy, cx, cy);
+    }
+
+    private static void scale(Line line, int sx, int sy, int cx, int cy) {
+        line.x1 -= cx;
+        line.x2 -= cx;
+        line.y1 -= cy;
+        line.y2 -= cy;
+        Matrix lineMatrix1 = new Matrix(new int[][]{
+                {
+                        line.x1, line.y1, 1
+                }
         });
+        Matrix lineMatrix2 = new Matrix(new int[][]{
+                {
+                        line.x2, line.y2, 1
+                }
+        });
+        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
+            put(Coordinate.of(0, 0), i -> i * sx);
+            put(Coordinate.of(1, 1), i -> i * sy);
+            put(Coordinate.of(2, 2), i -> i);
+        }});
+        Matrix appliedMatrix1 = lineMatrix1.apply(funcMatrix);
+        Matrix appliedMatrix2 = lineMatrix2.apply(funcMatrix);
+        line.x1 = appliedMatrix1.get(0, 0) + cx;
+        line.y1 = appliedMatrix1.get(0, 1) + cy;
+        line.x2 = appliedMatrix2.get(0, 0) + cx;
+        line.y2 = appliedMatrix2.get(0, 1) + cy;
     }
 
-    private static void basicRotate(List<Line> lines, int angle) {
-        // TODO: basic rotation
+    private static void basicRotation(List<Line> lines, int angle) {
+        rotation(lines, angle, 0, 0);
     }
 
-    private static void rotate(List<Line> lines, int angle, int cx, int cy) {
-        // TODO: rotate all lines
+    private static void centerRotation(List<Line> lines, int angle) {
+        lines.forEach(line -> centerRotation(line, angle));
     }
 
-    private static void displayPixels(String filename) {
+    private static void rotation(List<Line> lines, int angle, int cx, int cy) {
+        lines.forEach(line -> rotation(line, angle, cx, cy));
+    }
 
-        // TODO: update pixels on screen
+    private static void centerRotation(Line line, int angle) {
+        rotation(line, angle, (line.x1 + line.x2) / 2, (line.y1 + line.y2) / 2);
+    }
+
+    private static void rotation(Line line, int angle, int cx, int cy) {
+        line.x1 -= cx;
+        line.x2 -= cx;
+        line.y1 -= cy;
+        line.y2 -= cy;
+        Matrix lineMatrix1 = new Matrix(new int[][]{
+                {
+                        line.x1, line.y1, 1
+                }
+        });
+        Matrix lineMatrix2 = new Matrix(new int[][]{
+                {
+                        line.x2, line.y2, 1
+                }
+        });
+        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
+            put(Coordinate.of(0, 0), i -> (int) (i * Math.cos(angle)));
+            put(Coordinate.of(0, 1), i -> (int) (i * -Math.sin(angle)));
+            put(Coordinate.of(1, 0), i -> (int) (i * Math.sin(angle)));
+            put(Coordinate.of(1, 1), i -> (int) (i * Math.cos(angle)));
+            put(Coordinate.of(2, 2), i -> 1);
+        }});
+        Matrix appliedMatrix1 = lineMatrix1.apply(funcMatrix);
+        Matrix appliedMatrix2 = lineMatrix2.apply(funcMatrix);
+        line.x1 = appliedMatrix1.get(0, 0) + cx;
+        line.y1 = appliedMatrix1.get(0, 1) + cy;
+        line.x2 = appliedMatrix2.get(0, 0) + cx;
+        line.y2 = appliedMatrix2.get(0, 1) + cy;
     }
 
     private static void test1() {
@@ -451,5 +508,39 @@ public class Assignment3 implements Runnable {
         scanner.nextLine();
         frame.repaint();
     }
+
+    private static void test8() {
+        List<Line> lines = new ArrayList<>() {{
+            add(new Line(200, 200, 400, 400));
+        }};
+        JFrame frame = new JFrame(TITLE);
+        EventQueue.invokeLater(() -> {
+            System.out.println("Lines before: " + lines);
+            frame.add(new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    lines.forEach(line -> draw(g, line));
+                }
+            });
+            frame.setVisible(true);
+            frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        });
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Center x: ");
+        int cx = Integer.parseInt(scanner.nextLine());
+        System.out.print("Center y: ");
+        int cy = Integer.parseInt(scanner.nextLine());
+        System.out.print("Apply angle: ");
+        int angle = Integer.parseInt(scanner.nextLine());
+        System.out.print("Press enter to apply...");
+        scanner.nextLine();
+        rotation(lines, angle, cx, cy);
+        System.out.println("Lines after: " + lines);
+        System.out.print("Press enter to display changes...");
+        scanner.nextLine();
+        frame.repaint();
+    }
+
 
 }
