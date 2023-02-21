@@ -15,17 +15,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
-public class Assignment3 implements Runnable {
+public class Assignment_3 implements Runnable {
 
     private static final List<Runnable> TESTS = List.of(
-            Assignment3::test1,
-            Assignment3::test2,
-            Assignment3::test3,
-            Assignment3::test4,
-            Assignment3::test5,
-            Assignment3::test6,
-            Assignment3::test7,
-            Assignment3::test8
+            Assignment_3::test1,
+            Assignment_3::test2,
+            Assignment_3::test3,
+            Assignment_3::test4,
+            Assignment_3::test5,
+            Assignment_3::test6,
+            Assignment_3::test7,
+            Assignment_3::test8
     );
 
     private static final List<Integer> TESTS_TO_RUN = List.of(
@@ -42,16 +42,15 @@ public class Assignment3 implements Runnable {
 
         INPUT_LINES("Input lines: \"1 <path to file of lines> <enter \"y\" to clear current lines>\""),
         OUTPUT_LINES("Output lines: \"2 <name of file>\""),
-        TRANSFORMATIONS("Transformations: \"3 <matrix file>\""),
-        TRANSLATION("Translation: \"4 <dx> <dy>\""),
-        BASIC_SCALE("Basic scale: \"5 <sx> <sy>\""),
-        SCALE("Scale: \"6 <sx> <sy> <cx> <cy>\""),
-        CENTER_SCALE("Center scale: \"7 <sx> <sy>\""),
-        BASIC_ROTATE("Basic rotation: \"8 <angle>\""),
-        ROTATE("Rotate: \"9 <angle> <cx> <cy>\""),
-        CENTER_ROTATE("Center rotation: \"10 <angle>\""),
-        HELP("Help: \"11\""),
-        EXIT("Exit: \"12\"");
+        TRANSLATION("Translation: \"3 <dx> <dy>\""),
+        BASIC_SCALE("Basic scale: \"4 <sx> <sy>\""),
+        SCALE("Scale: \"5 <sx> <sy> <cx> <cy>\""),
+        CENTER_SCALE("Center scale: \"6 <sx> <sy>\""),
+        BASIC_ROTATE("Basic rotation: \"7 <angle>\""),
+        ROTATE("Rotate: \"8 <angle> <cx> <cy>\""),
+        CENTER_ROTATE("Center rotation: \"9 <angle>\""),
+        HELP("Help: \"10\""),
+        EXIT("Exit: \"11\"");
 
         private final String prompt;
 
@@ -67,7 +66,7 @@ public class Assignment3 implements Runnable {
 
     private final boolean test;
 
-    public Assignment3(boolean test) {
+    public Assignment_3(boolean test) {
         this.test = test;
     }
 
@@ -116,10 +115,6 @@ public class Assignment3 implements Runnable {
                     case OUTPUT_LINES -> {
                         String filename = input[1];
                         outputLines(filename, lines);
-                    }
-                    case TRANSFORMATIONS -> {
-                        String file = input[1];
-                        transformations(lines, file);
                     }
                     case TRANSLATION -> {
                         int dx = Integer.parseInt(input[1]);
@@ -241,10 +236,6 @@ public class Assignment3 implements Runnable {
         }
         bufferedWriter.close();
         System.out.println("Successfully wrote to " + filename);
-    }
-
-    private static void transformations(List<Line> lines, String filename) {
-        // TODO: apply trans
     }
 
     private static void translate(List<Line> lines, int dx, int dy) {
@@ -416,9 +407,9 @@ public class Assignment3 implements Runnable {
 
     private static void test3() {
         Line line = new Line(0, 0, 10, 10);
-        Assignment3.translate(List.of(line), 30, 10);
+        Assignment_3.translate(List.of(line), 30, 10);
         System.out.println(line);
-        Assignment3.translate(List.of(line), -50, 10);
+        Assignment_3.translate(List.of(line), -50, 10);
         System.out.println(line);
     }
 

@@ -13,6 +13,10 @@ public class Line {
         this(vals.get(0), vals.get(1), vals.get(2), vals.get(3));
     }
 
+    public Line(int[] vals) {
+        this(vals[0], vals[1], vals[2], vals[3]);
+    }
+
     public Line(int x1, int y1, int x2, int y2) {
         if (x1 < x2) {
             this.x1 = x1;
@@ -25,10 +29,6 @@ public class Line {
             this.x2 = x1;
             this.y2 = y1;
         }
-    }
-
-    public Coordinate getMidpoint() {
-        return new Coordinate((x1 + x2) / 2, (y1 + y2) / 2);
     }
 
     @Override
