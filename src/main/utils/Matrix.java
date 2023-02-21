@@ -39,6 +39,23 @@ public class Matrix {
         return C;
     }
 
+    public Matrix apply(FuncMatrix funcMatrix) {
+        Matrix A = this;
+        if (A.cols != funcMatrix.rows) {
+            throw new RuntimeException("Illegal matrix dimensions. A cols: " +
+                    A.cols + ", Func matrix rows: " + funcMatrix.rows);
+        }
+        Matrix C = new Matrix(A.rows, funcMatrix.cols);
+        for (int i = 0; i < C.rows; i++) {
+            for (int j = 0; j < C.cols; j++) {
+                for (int k = 0; k < A.cols; k++) {
+                    C.data[i][j] += funcMatrix.get(k, j).apply(A.data[i][j]);
+                }
+            }
+        }
+        return C;
+    }
+
     public int get(int x, int y) {
         return data[x][y];
     }

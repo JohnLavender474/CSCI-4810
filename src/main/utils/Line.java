@@ -27,6 +27,10 @@ public class Line {
         }
     }
 
+    public Coordinate getMidpoint() {
+        return new Coordinate((x1 + x2) / 2, (y1 + y2) / 2);
+    }
+
     @Override
     public String toString() {
         return x1 + "," + y1 + "," + x2 + "," + y2;

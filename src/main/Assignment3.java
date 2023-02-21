@@ -1,10 +1,13 @@
 package main;
 
+import main.utils.Coordinate;
+import main.utils.FuncMatrix;
 import main.utils.Line;
 import main.utils.Matrix;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -19,11 +22,13 @@ public class Assignment3 implements Runnable {
             Assignment3::test2,
             Assignment3::test3,
             Assignment3::test4,
-            Assignment3::test5
+            Assignment3::test5,
+            Assignment3::test6,
+            Assignment3::test7
     );
 
     private static final List<Integer> TESTS_TO_RUN = List.of(
-            4
+            7
     );
 
     private static final String TITLE = "John Lavender - CSCI 4810 Assignment 3";
@@ -35,16 +40,15 @@ public class Assignment3 implements Runnable {
     private enum Option {
 
         INPUT_LINES("Input lines: \"1 <path to file of lines> <enter \"y\" to clear current lines>\""),
-        APPLY_TRANS("Apply transformations: \"2 <matrix file>\""),
-        DISPLAY_PIXELS("Display pixels: \"3: <path to file of lines>\""),
-        OUTPUT_LINES("Output lines: \"4 <name of file>\""),
-        BASIC_TRANS("Basic transformation: \"5 <dx> <dy>\""),
-        BASIC_SCALE("Basic scale: \"6 <sx> <sy>\""),
-        BASIC_ROTATE("Basic rotate: \"7 <angle>\""),
-        SCALE("Scale: \"8 <sx> <sy> <cx> <cy>\""),
-        ROTATE("Rotate: \"9 <angle> <cx> <cy>\""),
-        HELP("Help: \"10\""),
-        EXIT("Exit: \"11\"");
+        OUTPUT_LINES("Output lines: \"2 <name of file>\""),
+        TRANSFORMATIONS("Transformations: \"3 <matrix file>\""),
+        TRANSLATION("Translation: \"4 <dx> <dy>\""),
+        BASIC_SCALE("Basic scale: \"5 <sx> <sy>\""),
+        BASIC_ROTATE("Basic rotate: \"6 <angle>\""),
+        SCALE("Scale: \"7 <sx> <sy> <cx> <cy>\""),
+        ROTATE("Rotate: \"8 <angle> <cx> <cy>\""),
+        HELP("Help: \"9\""),
+        EXIT("Exit: \"10\"");
 
         private final String prompt;
 
@@ -75,8 +79,8 @@ public class Assignment3 implements Runnable {
             return;
         }
         final List<Line> lines = new ArrayList<>();
+        JFrame frame = new JFrame(TITLE);
         EventQueue.invokeLater(() -> {
-            JFrame frame = new JFrame(TITLE);
             frame.add(new JPanel() {
                 @Override
                 protected void paintComponent(Graphics g) {
@@ -92,35 +96,32 @@ public class Assignment3 implements Runnable {
         help();
         boolean running = true;
         while (running) {
+            System.out.print("\nENTER YOUR INPUT: ");
             String[] input = scanner.nextLine().split("\\s+");
             for (int i = 0; i < input.length; i++) {
                 input[i] = input[i].replace("\\s+", "");
             }
             try {
                 int ordinal = Integer.parseInt(input[0]);
-                Option option = Option.values()[ordinal];
+                Option option = Option.values()[ordinal - 1];
                 switch (option) {
                     case INPUT_LINES -> {
                         String file = input[1];
                         boolean clear = input.length < 3 || input[2].equalsIgnoreCase("y");
                         inputLines(lines, file, clear);
                     }
-                    case APPLY_TRANS -> {
+                    case TRANSFORMATIONS -> {
                         String file = input[1];
-                        applyTrans(lines, file);
+                        transformations(lines, file);
                     }
-                    case DISPLAY_PIXELS -> {
-                        String file = input[1];
-                        displayPixels(file);
+                    case TRANSLATION -> {
+                        int dx = Integer.parseInt(input[1]);
+                        int dy = Integer.parseInt(input[2]);
+                        translate(lines, dx, dy);
                     }
                     case BASIC_ROTATE -> {
                         int rotation = Integer.parseInt(input[1]);
                         basicRotate(lines, rotation);
-                    }
-                    case BASIC_TRANS -> {
-                        int dx = Integer.parseInt(input[1]);
-                        int dy = Integer.parseInt(input[2]);
-                        basicTrans(lines, dx, dy);
                     }
                     case BASIC_SCALE -> {
                         int sx = Integer.parseInt(input[1]);
@@ -147,11 +148,13 @@ public class Assignment3 implements Runnable {
                     case HELP -> help();
                     case EXIT -> running = false;
                 }
+                EventQueue.invokeLater(frame::repaint);
             } catch (Exception e) {
                 printErr(e);
             }
         }
         System.out.println("\n----------\nTHANK YOU FOR TRYING OUT MY PROJECT :)");
+        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
     private static void draw(Graphics g, Line line) {
@@ -193,64 +196,10 @@ public class Assignment3 implements Runnable {
         System.out.println("----------\n");
     }
 
-    private static void translate(Line line, int dx, int dy) {
-        Matrix lineMatrix1 = new Matrix(new int[][]{
-                {
-                        line.x1, line.y1, 1
-                }
-        });
-        Matrix lineMatrix2 = new Matrix(new int[][]{
-                {
-                        line.x2, line.y2, 1
-                }
-        });
-        Matrix transMatrix = new Matrix(new int[][]{
-                {
-                        1, 0, 0
-                },
-                {
-                        0, 1, 0
-                },
-                {
-                        dx, dy, 1
-                }
-        });
-        Matrix trans1 = lineMatrix1.times(transMatrix);
-        Matrix trans2 = lineMatrix2.times(transMatrix);
-        line.x1 = trans1.get(0, 0);
-        line.y1 = trans1.get(0, 1);
-        line.x2 = trans2.get(0, 0);
-        line.y2 = trans2.get(0, 1);
-    }
-
     private static void help() {
         System.out.println("OPTIONS:");
         Arrays.stream(Option.values()).forEach(option -> System.out.println("\t: " + option.getPrompt()));
         System.out.println('\n');
-    }
-
-    private static void outputLines(String filename, Collection<Line> lines) throws Exception {
-        File file = new File(filename);
-        FileWriter writer = new FileWriter(file.getAbsoluteFile());
-        BufferedWriter bufferedWriter = new BufferedWriter(writer);
-        for (Line line : lines) {
-            bufferedWriter.write(line.toString());
-            bufferedWriter.newLine();
-        }
-        bufferedWriter.close();
-        System.out.println("Successfully wrote to " + filename);
-    }
-
-    private static void rotate(List<Line> lines, int angle, int cx, int cy) {
-        // TODO: rotate all lines
-    }
-
-    private static void scale(List<Line> lines, int sx, int sy, int cx, int cy) {
-        // TODO: scale lines
-    }
-
-    private static void basicScale(List<Line> lines, int sx, int sy) {
-        // TODO: basic scale
     }
 
     private static void inputLines(List<Line> lines, String filename, boolean clear) throws Exception {
@@ -266,22 +215,103 @@ public class Assignment3 implements Runnable {
             lines.clear();
         }
         lines.addAll(newLines);
+        System.out.println("Lines:");
+        lines.forEach(line -> System.out.println("\t" + line));
     }
 
-    private static void applyTrans(List<Line> lines, String filename) {
+    private static void outputLines(String filename, Collection<Line> lines) throws Exception {
+        File file = new File(filename);
+        FileWriter writer = new FileWriter(file.getAbsoluteFile());
+        BufferedWriter bufferedWriter = new BufferedWriter(writer);
+        for (Line line : lines) {
+            bufferedWriter.write(line.toString());
+            bufferedWriter.newLine();
+        }
+        bufferedWriter.close();
+        System.out.println("Successfully wrote to " + filename);
+    }
+
+    private static void transformations(List<Line> lines, String filename) {
         // TODO: apply trans
     }
 
-    private static void displayPixels(String filename) {
-        // TODO: update pixels on screen
+    private static void translate(List<Line> lines, int dx, int dy) {
+        lines.forEach(line -> {
+            Matrix lineMatrix1 = new Matrix(new int[][]{
+                    {
+                            line.x1, line.y1, 1
+                    }
+            });
+            Matrix lineMatrix2 = new Matrix(new int[][]{
+                    {
+                            line.x2, line.y2, 1
+                    }
+            });
+            Matrix transMatrix = new Matrix(new int[][]{
+                    {
+                            1, 0, 0
+                    },
+                    {
+                            0, 1, 0
+                    },
+                    {
+                            dx, dy, 1
+                    }
+            });
+            Matrix trans1 = lineMatrix1.times(transMatrix);
+            Matrix trans2 = lineMatrix2.times(transMatrix);
+            line.x1 = trans1.get(0, 0);
+            line.y1 = trans1.get(0, 1);
+            line.x2 = trans2.get(0, 0);
+            line.y2 = trans2.get(0, 1);
+        });
     }
 
-    private static void basicRotate(List<Line> lines, int rotation) {
+    private static void basicScale(List<Line> lines, int sx, int sy) {
+        scale(lines, sx, sy, 0, 0);
+    }
+
+    private static void scale(List<Line> lines, int sx, int sy, int cx, int cy) {
+        lines.forEach(line -> {
+            line.x1 -= cx;
+            line.x2 -= cx;
+            line.y1 -= cy;
+            line.y2 -= cy;
+            Matrix lineMatrix1 = new Matrix(new int[][]{
+                    {
+                            line.x1, line.y1, 1
+                    }
+            });
+            Matrix lineMatrix2 = new Matrix(new int[][]{
+                    {
+                            line.x2, line.y2, 1
+                    }
+            });
+            FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
+                put(Coordinate.of(0, 0), i -> i * sx);
+                put(Coordinate.of(1, 1), i -> i * sy);
+                put(Coordinate.of(2, 2), i -> i);
+            }});
+            Matrix appliedMatrix1 = lineMatrix1.apply(funcMatrix);
+            Matrix appliedMatrix2 = lineMatrix2.apply(funcMatrix);
+            line.x1 = appliedMatrix1.get(0, 0) + cx;
+            line.y1 = appliedMatrix1.get(0, 1) + cy;
+            line.x2 = appliedMatrix2.get(0, 0) + cx;
+            line.y2 = appliedMatrix2.get(0, 1) + cy;
+        });
+    }
+
+    private static void basicRotate(List<Line> lines, int angle) {
         // TODO: basic rotation
     }
 
-    private static void basicTrans(List<Line> lines, int dx, int dy) {
-        // TODO: basic trans
+    private static void rotate(List<Line> lines, int angle, int cx, int cy) {
+        // TODO: rotate all lines
+    }
+
+    private static void displayPixels(String filename) {
+
+        // TODO: update pixels on screen
     }
 
     private static void test1() {
@@ -329,9 +359,9 @@ public class Assignment3 implements Runnable {
 
     private static void test3() {
         Line line = new Line(0, 0, 10, 10);
-        Assignment3.translate(line, 30, 10);
+        Assignment3.translate(List.of(line), 30, 10);
         System.out.println(line);
-        Assignment3.translate(line, -50, 10);
+        Assignment3.translate(List.of(line), -50, 10);
         System.out.println(line);
     }
 
@@ -373,6 +403,53 @@ public class Assignment3 implements Runnable {
             frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         });
+    }
+
+    private static void test6() {
+        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
+            put(Coordinate.of(0, 0), i -> i * 3);
+            put(Coordinate.of(1, 1), i -> i * 2);
+            put(Coordinate.of(2, 2), i -> i);
+        }});
+        Matrix a = new Matrix(new int[][]{
+                {
+                        20, 50, 1
+                }
+        });
+        Matrix b = a.apply(funcMatrix);
+        System.out.println(b);
+    }
+
+    private static void test7() {
+        List<Line> lines = new ArrayList<>() {{
+            add(new Line(50, 200, 400, 100));
+            add(new Line(100, 100, 150, 150));
+        }};
+        JFrame frame = new JFrame(TITLE);
+        EventQueue.invokeLater(() -> {
+            System.out.println("Lines before: " + lines);
+            frame.add(new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    lines.forEach(line -> draw(g, line));
+                }
+            });
+            frame.setVisible(true);
+            frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        });
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Apply scale x: ");
+        int sx = Integer.parseInt(scanner.nextLine());
+        System.out.print("Apply scale y: ");
+        int sy = Integer.parseInt(scanner.nextLine());
+        System.out.print("Press enter to apply...");
+        scanner.nextLine();
+        basicScale(lines, sx, sy);
+        System.out.println("Lines after: " + lines);
+        System.out.print("Press enter to display changes...");
+        scanner.nextLine();
+        frame.repaint();
     }
 
 }
