@@ -14,8 +14,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
+/**
+ * Assignment 3. Implement 2d transformations (translation, scale, and rotation) using matrices.
+ */
 public class Assignment_3 implements Runnable {
 
+    // runnable tests
     private static final List<Runnable> TESTS = List.of(
             Assignment_3::test1,
             Assignment_3::test2,
@@ -27,6 +31,7 @@ public class Assignment_3 implements Runnable {
             Assignment_3::test8
     );
 
+    // which tests to run
     private static final List<Integer> TESTS_TO_RUN = List.of(
             /*
             1,
@@ -53,6 +58,9 @@ public class Assignment_3 implements Runnable {
     private static final Color X_AXIS_COLOR = Color.BLUE;
     private static final Color Y_AXIS_COLOR = Color.BLUE;
 
+    /**
+     * Options listed in enum for convenience.
+     */
     private enum Option {
 
         INPUT_LINES("Input lines: \"1 <path to file of lines> <enter \"y\" to clear current lines>\""),
@@ -70,10 +78,20 @@ public class Assignment_3 implements Runnable {
 
         private final String prompt;
 
+        /**
+         * Create a new Option enum.
+         *
+         * @param prompt the prompt of the Option
+         */
         Option(String prompt) {
             this.prompt = prompt;
         }
 
+        /**
+         * Get the prompt of this Option.
+         *
+         * @return the prompt
+         */
         String getPrompt() {
             return prompt;
         }
@@ -85,6 +103,11 @@ public class Assignment_3 implements Runnable {
 
     private final boolean test;
 
+    /**
+     * Create new class for assignment 3.
+     *
+     * @param test if the test runnables should be run instead of the main program
+     */
     public Assignment_3(boolean test) {
         this.test = test;
     }

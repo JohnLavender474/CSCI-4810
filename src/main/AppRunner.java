@@ -1,5 +1,8 @@
 package main;
 
+/**
+ * App runner class for running assignment programs.
+ */
 public class AppRunner {
 
     private enum AssignmentType {
@@ -10,6 +13,11 @@ public class AppRunner {
     private static final AssignmentType assType = AssignmentType.ASS_3;
     private static final boolean TEST = false;
 
+    /**
+     * Main entry point into app.
+     *
+     * @param args the commandline args
+     */
     public static void main(String[] args) {
         System.out.println("Working Directory = " + System.getProperty("user.dir") + "\n");
         (switch (assType) {

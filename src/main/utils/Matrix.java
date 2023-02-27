@@ -2,21 +2,33 @@ package main.utils;
 
 import java.util.function.IntFunction;
 
-// https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html
+/**
+ * Represents a rows x cols matrix of integers. Based on implementation provided at
+ * <link><a href="https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html">Princeton Matrix class</a></link>
+ */
 public class Matrix {
-
-    public static final boolean TEST = false;
 
     private final int rows;
     private final int cols;
     private final int[][] data;
 
+    /**
+     * Creates rows x cols matrix.
+     *
+     * @param rows the number of rows
+     * @param cols the number of columns
+     */
     public Matrix(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
         data = new int[rows][cols];
     }
 
+    /**
+     * Creates a matrix that references the provided array.
+     *
+     * @param data the array that this instance references
+     */
     public Matrix(int[][] data) {
         this(data.length, data[0].length);
         for (int i = 0; i < rows; i++) {
@@ -26,6 +38,21 @@ public class Matrix {
         }
     }
 
+    public int getRows() {
+        return rows;
+    }
+
+    public int getCols() {
+        return cols;
+    }
+
+    /**
+     * Multiply this matrix by the provided matrix. Number of columns in this matrix must be equal to
+     * number of rows in the provided matrix.
+     *
+     * @param B the other matrix
+     * @return a matrix with one row and cols equals to {@link #getCols()} of the provided matrix
+     */
     public Matrix times(Matrix B) {
         Matrix A = this;
         if (A.cols != B.rows) {
@@ -46,6 +73,13 @@ public class Matrix {
         return C;
     }
 
+    /**
+     * Apply the function matrix to this matrix. Number of columns in this matrix must be equal to
+     * number of rows in the provided matrix.
+     *
+     * @param funcMatrix the matrix of functions
+     * @return a matrix with one row and cols equals to {@link #getCols()} of the provided function matrix
+     */
     public Matrix apply(FuncMatrix funcMatrix) {
         Matrix A = this;
         if (A.cols != funcMatrix.rows) {
@@ -66,8 +100,15 @@ public class Matrix {
         return C;
     }
 
-    public int get(int x, int y) {
-        return data[x][y];
+    /**
+     * Get the value contained at the specified row and column.
+     *
+     * @param row the row
+     * @param col the column
+     * @return the value
+     */
+    public int get(int row, int col) {
+        return data[row][col];
     }
 
     @Override

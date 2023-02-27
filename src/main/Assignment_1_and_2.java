@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * Assignments 1 and 2. Implement the basic line drawing algorithm and Bresenham's line drawing algorithm.
+ */
 public class Assignment_1_and_2 implements Runnable {
 
     private static final int WINDOW_WIDTH = 800;
@@ -24,6 +27,11 @@ public class Assignment_1_and_2 implements Runnable {
 
     private final boolean test;
 
+    /**
+     * Create new instance for Assignment 1 and 2.
+     *
+     * @param test if the test runnables should be run instead of the main program
+     */
     public Assignment_1_and_2(boolean test) {
         this.test = test;
     }
