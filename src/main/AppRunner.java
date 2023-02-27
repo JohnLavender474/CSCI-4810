@@ -7,7 +7,7 @@ public class AppRunner {
         ASS_3
     }
 
-    private static final AssignmentType assType = AssignmentType.ASS_1_AND_2;
+    private static final AssignmentType assType = AssignmentType.ASS_3;
     private static final boolean TEST = false;
 
     public static void main(String[] args) {

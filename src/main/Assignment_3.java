@@ -8,10 +8,7 @@ import main.utils.Matrix;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -29,6 +26,13 @@ public class Assignment_3 implements Runnable {
     );
 
     private static final List<Integer> TESTS_TO_RUN = List.of(
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
             8
     );
 
@@ -36,21 +40,28 @@ public class Assignment_3 implements Runnable {
 
     private static final int WINDOW_WIDTH = 800;
     private static final int WINDOW_HEIGHT = 800;
-    private static final int PPM = 1;
+    private static final int PIXEL_SIZE = 1;
+    private static final int AXIS_HALF_LENGTH = 1000;
+
+    private static final Color PIXEL_COLOR = Color.RED;
+    private static final Color X_AXIS_COLOR = Color.BLUE;
+    private static final Color Y_AXIS_COLOR = Color.BLUE;
 
     private enum Option {
 
         INPUT_LINES("Input lines: \"1 <path to file of lines> <enter \"y\" to clear current lines>\""),
         OUTPUT_LINES("Output lines: \"2 <name of file>\""),
-        TRANSLATION("Translation: \"3 <dx> <dy>\""),
-        BASIC_SCALE("Basic scale: \"4 <sx> <sy>\""),
-        SCALE("Scale: \"5 <sx> <sy> <cx> <cy>\""),
-        CENTER_SCALE("Center scale: \"6 <sx> <sy>\""),
-        BASIC_ROTATE("Basic rotation: \"7 <angle>\""),
-        ROTATE("Rotate: \"8 <angle> <cx> <cy>\""),
-        CENTER_ROTATE("Center rotation: \"9 <angle>\""),
-        HELP("Help: \"10\""),
-        EXIT("Exit: \"11\"");
+        TRANSFORMATIONS("Transformations: \"3 <path to file of commands\""),
+        TRANSLATION("Translation: \"4 <dx> <dy>\""),
+        BASIC_SCALE("Basic scale: \"5 <sx> <sy>\""),
+        SCALE("Scale: \"6 <sx> <sy> <cx> <cy>\""),
+        CENTER_SCALE("Center scale: \"7 <sx> <sy>\""),
+        BASIC_ROTATE("Basic rotation: \"8 <angle>\""),
+        ROTATE("Rotate: \"9 <angle> <cx> <cy>\""),
+        CENTER_ROTATE("Center rotation: \"10 <angle>\""),
+        SET_OFFSET("Set offset: \"11 <offsetX> <offsetY>\""),
+        HELP("Help: \"12\""),
+        EXIT("Exit: \"13\"");
 
         private final String prompt;
 
@@ -63,6 +74,9 @@ public class Assignment_3 implements Runnable {
         }
 
     }
+
+    private static int OFFSET_X = 0;
+    private static int OFFSET_Y = 0;
 
     private final boolean test;
 
@@ -82,10 +96,14 @@ public class Assignment_3 implements Runnable {
         }
         final List<Line> lines = new ArrayList<>();
         JFrame frame = new JFrame(TITLE);
+        Line xAxisLine = new Line(0, -AXIS_HALF_LENGTH * PIXEL_SIZE, 0, AXIS_HALF_LENGTH * PIXEL_SIZE);
+        Line yAxisLine = new Line(-AXIS_HALF_LENGTH * PIXEL_SIZE, 0, AXIS_HALF_LENGTH * PIXEL_SIZE, 0);
         EventQueue.invokeLater(() -> {
             frame.add(new JPanel() {
                 @Override
                 protected void paintComponent(Graphics g) {
+                    draw(g, xAxisLine, X_AXIS_COLOR);
+                    draw(g, yAxisLine, Y_AXIS_COLOR);
                     draw(g, lines);
                 }
             });
@@ -152,6 +170,12 @@ public class Assignment_3 implements Runnable {
                         int angle = Integer.parseInt(input[1]);
                         centerRotation(lines, angle);
                     }
+                    case SET_OFFSET -> {
+                        int offsetX = Integer.parseInt(input[1]);
+                        int offsetY = Integer.parseInt(input[2]);
+                        OFFSET_X = offsetX;
+                        OFFSET_Y = offsetY;
+                    }
                     case HELP -> help();
                     case EXIT -> running = false;
                 }
@@ -165,6 +189,11 @@ public class Assignment_3 implements Runnable {
     }
 
     private static void draw(Graphics g, Line line) {
+        draw(g, line, PIXEL_COLOR);
+    }
+
+    private static void draw(Graphics g, Line line, Color color) {
+        g.setColor(color);
         float dx = line.x2 - line.x1;
         float dy = line.y2 - line.y1;
         float x = line.x1;
@@ -173,14 +202,14 @@ public class Assignment_3 implements Runnable {
         if (Math.abs(dx) > Math.abs(dy)) {
             m = dy / dx;
             for (int i = 0; i <= Math.abs(dx); i++) {
-                g.fillRect((int) x, (int) (WINDOW_HEIGHT - y) * PPM, PPM, PPM);
+                drawRect((int) x, (int) y, g);
                 x++;
                 y += m;
             }
         } else {
             m = dx / dy;
             for (int i = 0; i <= Math.abs(dy); i++) {
-                g.fillRect((int) x * PPM, (int) (WINDOW_HEIGHT - y) * PPM, PPM, PPM);
+                drawRect((int) x, (int) y, g);
                 if (dy < 0f) {
                     y--;
                     x -= m;
@@ -192,8 +221,19 @@ public class Assignment_3 implements Runnable {
         }
     }
 
+    private static void drawRect(int x, int y, Graphics g) {
+        int rectX = (x * PIXEL_SIZE) + OFFSET_X;
+        int rectY = ((WINDOW_HEIGHT - y) * PIXEL_SIZE) - OFFSET_Y;
+        g.fillRect(rectX, rectY, PIXEL_SIZE, PIXEL_SIZE);
+    }
+
     private static void draw(Graphics g, List<Line> lines) {
         lines.forEach(line -> draw(g, line));
+    }
+
+    private static void printLines(List<Line> lines) {
+        System.out.println("Lines:");
+        lines.forEach(line -> System.out.println("\t" + line));
     }
 
     private static void printErr(Exception e) {
@@ -222,8 +262,7 @@ public class Assignment_3 implements Runnable {
             lines.clear();
         }
         lines.addAll(newLines);
-        System.out.println("Lines:");
-        lines.forEach(line -> System.out.println("\t" + line));
+        printLines(lines);
     }
 
     private static void outputLines(String filename, Collection<Line> lines) throws Exception {
