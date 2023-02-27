@@ -1,6 +1,5 @@
 package main;
 
-import main.utils.Coordinate;
 import main.utils.FuncMatrix;
 import main.utils.Line;
 import main.utils.Matrix;
@@ -8,7 +7,10 @@ import main.utils.Matrix;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -26,14 +28,18 @@ public class Assignment_3 implements Runnable {
     );
 
     private static final List<Integer> TESTS_TO_RUN = List.of(
+            /*
             1,
             2,
             3,
             4,
             5,
-            6,
+             */
+            6
+            /*
             7,
             8
+             */
     );
 
     private static final String TITLE = "John Lavender - CSCI 4810 Assignment 3";
@@ -50,18 +56,17 @@ public class Assignment_3 implements Runnable {
     private enum Option {
 
         INPUT_LINES("Input lines: \"1 <path to file of lines> <enter \"y\" to clear current lines>\""),
-        OUTPUT_LINES("Output lines: \"2 <name of file>\""),
-        TRANSFORMATIONS("Transformations: \"3 <path to file of commands\""),
-        TRANSLATION("Translation: \"4 <dx> <dy>\""),
-        BASIC_SCALE("Basic scale: \"5 <sx> <sy>\""),
-        SCALE("Scale: \"6 <sx> <sy> <cx> <cy>\""),
-        CENTER_SCALE("Center scale: \"7 <sx> <sy>\""),
-        BASIC_ROTATE("Basic rotation: \"8 <angle>\""),
-        ROTATE("Rotate: \"9 <angle> <cx> <cy>\""),
-        CENTER_ROTATE("Center rotation: \"10 <angle>\""),
-        SET_OFFSET("Set offset: \"11 <offsetX> <offsetY>\""),
-        HELP("Help: \"12\""),
-        EXIT("Exit: \"13\"");
+        OUTPUT_LINES("Output lines: \"2 <(optional) name of file>\""),
+        TRANSLATION("Translation: \"3 <dx> <dy>\""),
+        BASIC_SCALE("Basic scale: \"4 <sx> <sy>\""),
+        SCALE("Scale: \"5 <sx> <sy> <cx> <cy>\""),
+        CENTER_SCALE("Center scale: \"6 <sx> <sy>\""),
+        BASIC_ROTATE("Basic rotation: \"7 <degrees>\""),
+        ROTATE("Rotate: \"8 <degrees> <cx> <cy>\""),
+        CENTER_ROTATE("Center rotation: \"9 <degrees>\""),
+        SET_OFFSET("Set offset: \"10 <offsetX> <offsetY>\""),
+        HELP("Help: \"11\""),
+        EXIT("Exit: \"12\"");
 
         private final String prompt;
 
@@ -75,8 +80,8 @@ public class Assignment_3 implements Runnable {
 
     }
 
-    private static int OFFSET_X = 0;
-    private static int OFFSET_Y = 0;
+    private static int OFFSET_X = 100;
+    private static int OFFSET_Y = 100;
 
     private final boolean test;
 
@@ -94,7 +99,7 @@ public class Assignment_3 implements Runnable {
             });
             return;
         }
-        final List<Line> lines = new ArrayList<>();
+        List<Line> lines = new ArrayList<>();
         JFrame frame = new JFrame(TITLE);
         Line xAxisLine = new Line(0, -AXIS_HALF_LENGTH * PIXEL_SIZE, 0, AXIS_HALF_LENGTH * PIXEL_SIZE);
         Line yAxisLine = new Line(-AXIS_HALF_LENGTH * PIXEL_SIZE, 0, AXIS_HALF_LENGTH * PIXEL_SIZE, 0);
@@ -131,8 +136,12 @@ public class Assignment_3 implements Runnable {
                         inputLines(lines, file, clear);
                     }
                     case OUTPUT_LINES -> {
-                        String filename = input[1];
-                        outputLines(filename, lines);
+                        if (input.length < 2) {
+                            outputLines(lines);
+                        } else {
+                            String filename = input[1];
+                            outputLines(filename, lines);
+                        }
                     }
                     case TRANSLATION -> {
                         int dx = Integer.parseInt(input[1]);
@@ -140,20 +149,20 @@ public class Assignment_3 implements Runnable {
                         translate(lines, dx, dy);
                     }
                     case BASIC_SCALE -> {
-                        int sx = Integer.parseInt(input[1]);
-                        int sy = Integer.parseInt(input[2]);
+                        double sx = Double.parseDouble(input[1]);
+                        double sy = Double.parseDouble(input[2]);
                         basicScale(lines, sx, sy);
                     }
                     case SCALE -> {
-                        int sx = Integer.parseInt(input[1]);
-                        int sy = Integer.parseInt(input[2]);
+                        double sx = Double.parseDouble(input[1]);
+                        double sy = Double.parseDouble(input[2]);
                         int cx = Integer.parseInt(input[3]);
                         int cy = Integer.parseInt(input[4]);
                         scale(lines, sx, sy, cx, cy);
                     }
                     case CENTER_SCALE -> {
-                        int sx = Integer.parseInt(input[1]);
-                        int sy = Integer.parseInt(input[2]);
+                        double sx = Double.parseDouble(input[1]);
+                        double sy = Double.parseDouble(input[2]);
                         centerScale(lines, sx, sy);
                     }
                     case BASIC_ROTATE -> {
@@ -161,14 +170,14 @@ public class Assignment_3 implements Runnable {
                         basicRotation(lines, rotation);
                     }
                     case ROTATE -> {
-                        int angle = Integer.parseInt(input[1]);
+                        int degrees = Integer.parseInt(input[1]);
                         int cx = Integer.parseInt(input[2]);
                         int cy = Integer.parseInt(input[3]);
-                        rotation(lines, angle, cx, cy);
+                        rotation(lines, degrees, cx, cy);
                     }
                     case CENTER_ROTATE -> {
-                        int angle = Integer.parseInt(input[1]);
-                        centerRotation(lines, angle);
+                        int degrees = Integer.parseInt(input[1]);
+                        centerRotation(lines, degrees);
                     }
                     case SET_OFFSET -> {
                         int offsetX = Integer.parseInt(input[1]);
@@ -190,6 +199,10 @@ public class Assignment_3 implements Runnable {
 
     private static void draw(Graphics g, Line line) {
         draw(g, line, PIXEL_COLOR);
+    }
+
+    private static void draw(Graphics g, List<Line> lines) {
+        lines.forEach(line -> draw(g, line));
     }
 
     private static void draw(Graphics g, Line line, Color color) {
@@ -227,10 +240,6 @@ public class Assignment_3 implements Runnable {
         g.fillRect(rectX, rectY, PIXEL_SIZE, PIXEL_SIZE);
     }
 
-    private static void draw(Graphics g, List<Line> lines) {
-        lines.forEach(line -> draw(g, line));
-    }
-
     private static void printLines(List<Line> lines) {
         System.out.println("Lines:");
         lines.forEach(line -> System.out.println("\t" + line));
@@ -238,7 +247,6 @@ public class Assignment_3 implements Runnable {
 
     private static void printErr(Exception e) {
         System.out.println("ERROR! ----------\n");
-        e.printStackTrace();
         System.out.println(e.getMessage());
         System.out.println("----------\n");
     }
@@ -265,73 +273,80 @@ public class Assignment_3 implements Runnable {
         printLines(lines);
     }
 
+    private static void outputLines(Collection<Line> lines) {
+        lines.forEach(System.out::println);
+    }
+
     private static void outputLines(String filename, Collection<Line> lines) throws Exception {
         File file = new File(filename);
         FileWriter writer = new FileWriter(file.getAbsoluteFile());
         BufferedWriter bufferedWriter = new BufferedWriter(writer);
-        for (Line line : lines) {
-            bufferedWriter.write(line.toString());
-            bufferedWriter.newLine();
-        }
+        lines.forEach(line -> {
+            try {
+                bufferedWriter.write(line.toString());
+                bufferedWriter.newLine();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         bufferedWriter.close();
         System.out.println("Successfully wrote to " + filename);
     }
 
     private static void translate(List<Line> lines, int dx, int dy) {
-        lines.forEach(line -> {
-            Matrix lineMatrix1 = new Matrix(new int[][]{
-                    {
-                            line.x1, line.y1, 1
-                    }
-            });
-            Matrix lineMatrix2 = new Matrix(new int[][]{
-                    {
-                            line.x2, line.y2, 1
-                    }
-            });
-            Matrix transMatrix = new Matrix(new int[][]{
-                    {
-                            1, 0, 0
-                    },
-                    {
-                            0, 1, 0
-                    },
-                    {
-                            dx, dy, 1
-                    }
-            });
-            Matrix trans1 = lineMatrix1.times(transMatrix);
-            Matrix trans2 = lineMatrix2.times(transMatrix);
-            line.x1 = trans1.get(0, 0);
-            line.y1 = trans1.get(0, 1);
-            line.x2 = trans2.get(0, 0);
-            line.y2 = trans2.get(0, 1);
+        Matrix transMatrix = new Matrix(new int[][]{
+                {
+                        1, 0, 0
+                },
+                {
+                        0, 1, 0
+                },
+                {
+                        dx, dy, 1
+                }
         });
+        lines.forEach(line -> translate(line, transMatrix));
     }
 
-    private static void basicScale(List<Line> lines, int sx, int sy) {
+    private static void translate(Line line, Matrix transMatrix) {
+        Matrix lineMatrix1 = new Matrix(new int[][]{
+                {
+                        line.x1, line.y1, 1
+                }
+        });
+        Matrix lineMatrix2 = new Matrix(new int[][]{
+                {
+                        line.x2, line.y2, 1
+                }
+        });
+        Matrix trans1 = lineMatrix1.times(transMatrix);
+        Matrix trans2 = lineMatrix2.times(transMatrix);
+        line.x1 = trans1.get(0, 0);
+        line.y1 = trans1.get(0, 1);
+        line.x2 = trans2.get(0, 0);
+        line.y2 = trans2.get(0, 1);
+    }
+
+    private static void basicScale(List<Line> lines, double sx, double sy) {
         scale(lines, sx, sy, 0, 0);
     }
 
-    private static void centerScale(List<Line> lines, int sx, int sy) {
+    private static void centerScale(List<Line> lines, double sx, double sy) {
         lines.forEach(line -> centerScale(line, sx, sy));
     }
 
-    private static void scale(List<Line> lines, int sx, int sy, int cx, int cy) {
-        lines.forEach(line -> scale(line, sx, sy, cx, cy));
-    }
-
-    private static void centerScale(Line line, int sx, int sy) {
+    private static void centerScale(Line line, double sx, double sy) {
         int cx = (line.x1 + line.x2) / 2;
         int cy = (line.y1 + line.y2) / 2;
         scale(line, sx, sy, cx, cy);
     }
 
-    private static void scale(Line line, int sx, int sy, int cx, int cy) {
-        line.x1 -= cx;
-        line.x2 -= cx;
-        line.y1 -= cy;
-        line.y2 -= cy;
+    private static void scale(List<Line> lines, double sx, double sy, int cx, int cy) {
+        lines.forEach(line -> scale(line, sx, sy, cx, cy));
+    }
+
+    private static void scale(Line line, double sx, double sy, int cx, int cy) {
+        translate(List.of(line), -cx, -cy);
         Matrix lineMatrix1 = new Matrix(new int[][]{
                 {
                         line.x1, line.y1, 1
@@ -342,40 +357,37 @@ public class Assignment_3 implements Runnable {
                         line.x2, line.y2, 1
                 }
         });
-        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
-            put(Coordinate.of(0, 0), i -> i * sx);
-            put(Coordinate.of(1, 1), i -> i * sy);
-            put(Coordinate.of(2, 2), i -> i);
-        }});
+        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0);
+        funcMatrix.put(0, 0, i -> (int) (i * sx));
+        funcMatrix.put(1, 1, i -> (int) (i * sy));
+        funcMatrix.put(2, 2, i -> i);
         Matrix appliedMatrix1 = lineMatrix1.apply(funcMatrix);
         Matrix appliedMatrix2 = lineMatrix2.apply(funcMatrix);
-        line.x1 = appliedMatrix1.get(0, 0) + cx;
-        line.y1 = appliedMatrix1.get(0, 1) + cy;
-        line.x2 = appliedMatrix2.get(0, 0) + cx;
-        line.y2 = appliedMatrix2.get(0, 1) + cy;
+        line.x1 = appliedMatrix1.get(0, 0);
+        line.y1 = appliedMatrix1.get(0, 1);
+        line.x2 = appliedMatrix2.get(0, 0);
+        line.y2 = appliedMatrix2.get(0, 1);
+        translate(List.of(line), cx, cy);
     }
 
-    private static void basicRotation(List<Line> lines, int angle) {
-        rotation(lines, angle, 0, 0);
+    private static void basicRotation(List<Line> lines, int degrees) {
+        rotation(lines, degrees, 0, 0);
     }
 
-    private static void centerRotation(List<Line> lines, int angle) {
-        lines.forEach(line -> centerRotation(line, angle));
+    private static void centerRotation(List<Line> lines, int degrees) {
+        lines.forEach(line -> centerRotation(line, degrees));
     }
 
-    private static void rotation(List<Line> lines, int angle, int cx, int cy) {
-        lines.forEach(line -> rotation(line, angle, cx, cy));
+    private static void centerRotation(Line line, int degrees) {
+        rotation(line, degrees, (line.x1 + line.x2) / 2, (line.y1 + line.y2) / 2);
     }
 
-    private static void centerRotation(Line line, int angle) {
-        rotation(line, angle, (line.x1 + line.x2) / 2, (line.y1 + line.y2) / 2);
+    private static void rotation(List<Line> lines, int degrees, int cx, int cy) {
+        lines.forEach(line -> rotation(line, degrees, cx, cy));
     }
 
-    private static void rotation(Line line, int angle, int cx, int cy) {
-        line.x1 -= cx;
-        line.x2 -= cx;
-        line.y1 -= cy;
-        line.y2 -= cy;
+    private static void rotation(Line line, int degrees, int cx, int cy) {
+        translate(List.of(line), -cx, -cy);
         Matrix lineMatrix1 = new Matrix(new int[][]{
                 {
                         line.x1, line.y1, 1
@@ -386,19 +398,19 @@ public class Assignment_3 implements Runnable {
                         line.x2, line.y2, 1
                 }
         });
-        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
-            put(Coordinate.of(0, 0), i -> (int) (i * Math.cos(angle)));
-            put(Coordinate.of(0, 1), i -> (int) (i * -Math.sin(angle)));
-            put(Coordinate.of(1, 0), i -> (int) (i * Math.sin(angle)));
-            put(Coordinate.of(1, 1), i -> (int) (i * Math.cos(angle)));
-            put(Coordinate.of(2, 2), i -> 1);
-        }});
+        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0);
+        double radians = Math.toRadians(degrees);
+        funcMatrix.put(0, 0, i -> (int) (i * Math.cos(radians)));
+        funcMatrix.put(0, 1, i -> (int) (i * -Math.sin(radians)));
+        funcMatrix.put(1, 0, i -> (int) (i * Math.sin(radians)));
+        funcMatrix.put(1, 1, i -> (int) (i * Math.cos(radians)));
         Matrix appliedMatrix1 = lineMatrix1.apply(funcMatrix);
         Matrix appliedMatrix2 = lineMatrix2.apply(funcMatrix);
-        line.x1 = appliedMatrix1.get(0, 0) + cx;
-        line.y1 = appliedMatrix1.get(0, 1) + cy;
-        line.x2 = appliedMatrix2.get(0, 0) + cx;
-        line.y2 = appliedMatrix2.get(0, 1) + cy;
+        line.x1 = appliedMatrix1.get(0, 0);
+        line.y1 = appliedMatrix1.get(0, 1);
+        line.x2 = appliedMatrix2.get(0, 0);
+        line.y2 = appliedMatrix2.get(0, 1);
+        translate(List.of(line), cx, cy);
     }
 
     private static void test1() {
@@ -446,9 +458,9 @@ public class Assignment_3 implements Runnable {
 
     private static void test3() {
         Line line = new Line(0, 0, 10, 10);
-        Assignment_3.translate(List.of(line), 30, 10);
+        translate(List.of(line), 30, 10);
         System.out.println(line);
-        Assignment_3.translate(List.of(line), -50, 10);
+        translate(List.of(line), -50, 10);
         System.out.println(line);
     }
 
@@ -493,18 +505,29 @@ public class Assignment_3 implements Runnable {
     }
 
     private static void test6() {
-        FuncMatrix funcMatrix = new FuncMatrix(3, 3, i -> 0, new HashMap<>() {{
-            put(Coordinate.of(0, 0), i -> i * 3);
-            put(Coordinate.of(1, 1), i -> i * 2);
-            put(Coordinate.of(2, 2), i -> i);
-        }});
-        Matrix a = new Matrix(new int[][]{
-                {
-                        20, 50, 1
-                }
-        });
-        Matrix b = a.apply(funcMatrix);
-        System.out.println(b);
+        int degrees = 90;
+        int cx = 5;
+        int cy = 5;
+
+        // test part 1
+        int[] line1 = new int[] {7, 11, 1};
+        line1[0] -= cx;
+        line1[1] -= cy;
+        int[][] matrix = new int[3][3];
+        matrix[0][0] = (int) (line1[0] * Math.cos(Math.toRadians(degrees)));
+        matrix[0][1] = (int) (line1[0] * -Math.sin(Math.toRadians(degrees)));
+        matrix[1][0] = (int) (line1[1] * Math.sin(Math.toRadians(degrees)));
+        matrix[1][1] = (int) (line1[1] * Math.cos(Math.toRadians(degrees)));
+        line1[0] = matrix[0][0] + matrix[1][0] + matrix[2][0] + cx;
+        line1[1] = matrix[0][1] + matrix[1][1] + matrix[2][1] + cy;
+        System.out.println("MANUAL: ");
+        System.out.println(Arrays.toString(line1) + "\n");
+
+        // test part 2
+        Line line2 = new Line(7, 11, 7, 11);
+        rotation(List.of(line2), degrees, cx, cy);
+        System.out.println("ALGO: ");
+        System.out.println(line2);
     }
 
     private static void test7() {
@@ -561,11 +584,11 @@ public class Assignment_3 implements Runnable {
         int cx = Integer.parseInt(scanner.nextLine());
         System.out.print("Center y: ");
         int cy = Integer.parseInt(scanner.nextLine());
-        System.out.print("Apply angle: ");
-        int angle = Integer.parseInt(scanner.nextLine());
+        System.out.print("Apply degrees: ");
+        int degrees = Integer.parseInt(scanner.nextLine());
         System.out.print("Press enter to apply...");
         scanner.nextLine();
-        rotation(lines, angle, cx, cy);
+        rotation(lines, degrees, cx, cy);
         System.out.println("Lines after: " + lines);
         System.out.print("Press enter to display changes...");
         scanner.nextLine();

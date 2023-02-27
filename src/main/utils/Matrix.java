@@ -1,7 +1,11 @@
 package main.utils;
 
+import java.util.function.IntFunction;
+
 // https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html
 public class Matrix {
+
+    public static final boolean TEST = false;
 
     private final int rows;
     private final int cols;
@@ -32,7 +36,10 @@ public class Matrix {
         for (int i = 0; i < C.rows; i++) {
             for (int j = 0; j < C.cols; j++) {
                 for (int k = 0; k < A.cols; k++) {
-                    C.data[i][j] += A.data[i][k] * B.data[k][j];
+                    int a = A.data[i][k];
+                    int b = B.data[k][j];
+                    int res = a * b;
+                    C.data[i][j] += res;
                 }
             }
         }
@@ -49,7 +56,10 @@ public class Matrix {
         for (int i = 0; i < C.rows; i++) {
             for (int j = 0; j < C.cols; j++) {
                 for (int k = 0; k < A.cols; k++) {
-                    C.data[i][j] += funcMatrix.get(k, j).apply(A.data[i][j]);
+                    int a = A.data[i][k];
+                    IntFunction<Integer> func = funcMatrix.get(k, j);
+                    int res = func.apply(a);
+                    C.data[i][j] += res;
                 }
             }
         }
