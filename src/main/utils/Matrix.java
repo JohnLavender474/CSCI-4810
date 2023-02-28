@@ -38,20 +38,12 @@ public class Matrix {
         }
     }
 
-    public int getRows() {
-        return rows;
-    }
-
-    public int getCols() {
-        return cols;
-    }
-
     /**
      * Multiply this matrix by the provided matrix. Number of columns in this matrix must be equal to
      * number of rows in the provided matrix.
      *
      * @param B the other matrix
-     * @return a matrix with one row and cols equals to {@link #getCols()} of the provided matrix
+     * @return a matrix with one row and cols equals to {@link #cols} of the provided matrix
      */
     public Matrix times(Matrix B) {
         Matrix A = this;
@@ -78,7 +70,7 @@ public class Matrix {
      * number of rows in the provided matrix.
      *
      * @param funcMatrix the matrix of functions
-     * @return a matrix with one row and cols equals to {@link #getCols()} of the provided function matrix
+     * @return a matrix with one row and cols equals to {@link #cols} of the provided function matrix
      */
     public Matrix apply(FuncMatrix funcMatrix) {
         Matrix A = this;

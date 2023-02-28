@@ -39,12 +39,10 @@ public class Assignment_3 implements Runnable {
             3,
             4,
             5,
-             */
             6
-            /*
             7,
             8
-             */
+            */
     );
 
     private static final String TITLE = "John Lavender - CSCI 4810 Assignment 3";
@@ -160,7 +158,7 @@ public class Assignment_3 implements Runnable {
                     }
                     case OUTPUT_LINES -> {
                         if (input.length < 2) {
-                            outputLines(lines);
+                            printLines(lines);
                         } else {
                             String filename = input[1];
                             outputLines(filename, lines);
@@ -294,10 +292,6 @@ public class Assignment_3 implements Runnable {
         }
         lines.addAll(newLines);
         printLines(lines);
-    }
-
-    private static void outputLines(Collection<Line> lines) {
-        lines.forEach(System.out::println);
     }
 
     private static void outputLines(String filename, Collection<Line> lines) throws Exception {
